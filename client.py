@@ -6,17 +6,17 @@
 
 """Python Env Environment Client."""
 
-from typing import Dict
+from typing import Any, Dict
 
 from openenv.core import EnvClient
 from openenv.core.client_types import StepResult
 from openenv.core.env_server.types import State
 
-from .models import PythonAction, PythonObservation
+from .models import PythonReviewAction, PythonReviewObservation
 
 
 class PythonEnv(
-    EnvClient[PythonAction, PythonObservation, State]
+    EnvClient[PythonReviewAction, PythonReviewObservation, State]
 ):
     """
     Client for the Python Env Environment.
@@ -29,53 +29,44 @@ class PythonEnv(
         >>> # Connect to a running server
         >>> with PythonEnv(base_url="http://localhost:8000") as client:
         ...     result = client.reset()
-        ...     print(result.observation.echoed_message)
+        ...     print(result.observation.task.title)
         ...
-        ...     result = client.step(PythonAction(message="Hello!"))
-        ...     print(result.observation.echoed_message)
+        ...     result = client.step(PythonReviewAction(operation="request_hint"))
+        ...     print(result.observation.feedback)
 
     Example with Docker:
         >>> # Automatically start container and connect
         >>> client = PythonEnv.from_docker_image("python_env-env:latest")
         >>> try:
         ...     result = client.reset()
-        ...     result = client.step(PythonAction(message="Test"))
+        ...     result = client.step(PythonReviewAction(operation="finalize"))
         ... finally:
         ...     client.close()
     """
 
-    def _step_payload(self, action: PythonAction) -> Dict:
+    def _step_payload(self, action: PythonReviewAction) -> Dict[str, Any]:
         """
-        Convert PythonAction to JSON payload for step message.
+        Convert PythonReviewAction to a JSON-safe payload.
 
         Args:
-            action: PythonAction instance
+            action: PythonReviewAction instance
 
         Returns:
             Dictionary representation suitable for JSON encoding
         """
-        return {
-            "message": action.message,
-        }
+        return action.model_dump(mode="json", exclude_none=True)
 
-    def _parse_result(self, payload: Dict) -> StepResult[PythonObservation]:
+    def _parse_result(self, payload: Dict[str, Any]) -> StepResult[PythonReviewObservation]:
         """
-        Parse server response into StepResult[PythonObservation].
+        Parse server response into StepResult[PythonReviewObservation].
 
         Args:
             payload: JSON response data from server
 
         Returns:
-            StepResult with PythonObservation
+            StepResult with PythonReviewObservation
         """
-        obs_data = payload.get("observation", {})
-        observation = PythonObservation(
-            echoed_message=obs_data.get("echoed_message", ""),
-            message_length=obs_data.get("message_length", 0),
-            done=payload.get("done", False),
-            reward=payload.get("reward"),
-            metadata=obs_data.get("metadata", {}),
-        )
+        observation = PythonReviewObservation(**payload.get("observation", {}))
 
         return StepResult(
             observation=observation,
