@@ -36,18 +36,18 @@ except Exception as e:  # pragma: no cover
     ) from e
 
 try:
-    from models import PythonAction, PythonObservation
+    from ..models import PythonReviewAction, PythonReviewObservation
     from .python_env_environment import PythonEnvironment
-except ModuleNotFoundError:
-    from models import PythonAction, PythonObservation
+except ImportError:
+    from models import PythonReviewAction, PythonReviewObservation
     from server.python_env_environment import PythonEnvironment
 
 
 # Create the app with web interface and README integration
 app = create_app(
     PythonEnvironment,
-    PythonAction,
-    PythonObservation,
+    PythonReviewAction,
+    PythonReviewObservation,
     env_name="python_env",
     max_concurrent_envs=1,  # increase this number to allow more concurrent WebSocket sessions
 )

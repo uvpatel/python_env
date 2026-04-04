@@ -241,6 +241,8 @@ class HealthResponse(BaseModel):
 
 # Backward-compatible aliases keep older imports working while the project
 # standardizes on the `Python*` naming convention.
+PythonAction = PythonReviewAction
+PythonObservation = PythonReviewObservation
 CodeReviewAction = PythonReviewAction
 CodeReviewObservation = PythonReviewObservation
 CodeReviewConfig = PythonEnvConfig
