@@ -36,7 +36,7 @@ except Exception as e:  # pragma: no cover
     ) from e
 
 try:
-    from ..models import PythonAction, PythonObservation
+    from models import PythonAction, PythonObservation
     from .python_env_environment import PythonEnvironment
 except ModuleNotFoundError:
     from models import PythonAction, PythonObservation
